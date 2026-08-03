@@ -119,12 +119,14 @@ namespace ToDoListe
                 for(int i = 0; i < todos.Count; i++)
                 {
                     writer.WriteLine("{");
+                    TodoItem todoItem = todos.ElementAt(i);
                     for (int y = 0; y < anzahlParameters; y++)
                     {
-                        writer.WriteLine(varNames[y] + ":");
+                        var feld = todoItem.GetType().GetField(varNames[y]);
+                        string varName = '"' + varNames[y] + '"';
+                        writer.WriteLine("\t"+ varName + ":" + feld.GetValue(todoItem));
                     }
                     writer.WriteLine("}");
-                    
                 }
             }
             catch (IOException e)

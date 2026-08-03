@@ -1,10 +1,10 @@
 {
-name:
-dauer:
-prio:
+	"name":Aufgabe1
+	"dauer":2
+	"prio":Important
 }
 {
-name:
-dauer:
-prio:
+	"name":Aufgabe2
+	"dauer":3
+	"prio":NotImportant
 }
