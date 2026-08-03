@@ -8,8 +8,8 @@ namespace ToDoListe
         static void Main(string[] args)
         {
             ToDoListe todoListe = new ToDoListe();
-            todoListe.AufabeHinzufügen("Aufgabe1", 2, Prios.Important);
-            todoListe.AufabeHinzufügen("Aufgabe2", 3, Prios.NotImportant);
+            todoListe.AufgabeHinzufügen("Aufgabe1", 2, Prios.Important);
+            todoListe.AufgabeHinzufügen("Aufgabe2", 3, Prios.NotImportant);
             string projektOrdner = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, @"..\..\.."));
 
             string dateiPfad = Path.Combine(projektOrdner, "todos.json");
@@ -57,7 +57,7 @@ namespace ToDoListe
     {
 
         List<TodoItem> todos = new List<TodoItem>();
-        public void AufabeHinzufügen(String name, int dauer, Prios prio)
+        public void AufgabeHinzufügen(String name, int dauer, Prios prio)
         {
             try
             {
@@ -88,7 +88,7 @@ namespace ToDoListe
 
         }
 
-        public void aufgabeAnzeigen(string name)
+        public void AufgabeAnzeigen(string name)
         {
             int x = 0;
             while (x < todos.Count) { 
@@ -124,13 +124,53 @@ namespace ToDoListe
                     {
                         var feld = todoItem.GetType().GetField(varNames[y]);
                         string varName = '"' + varNames[y] + '"';
-                        writer.WriteLine("\t"+ varName + ":" + feld.GetValue(todoItem));
+                        writer.WriteLine(varName + ":" + feld.GetValue(todoItem));
                     }
                     writer.WriteLine("}");
                 }
             }
             catch (IOException e)
             {
+                Console.WriteLine(e.Message);
+            }
+        }
+
+        public void AufgabeLaden(string path)
+        {
+            if (!path.EndsWith(".json"))
+            {
+                Console.WriteLine("Wrong File Type.");
+                return;
+            }
+
+            try
+            {
+                using StreamReader reader = new StreamReader(path);
+                string line = reader.ReadLine();
+                todos.Clear();
+                while (line != null)
+                {
+                    TodoItem item = new TodoItem(null, -1, Prios.NotImportant);
+                    
+                    while (line != "}") {
+                        if (line == "{")
+                        {
+                            continue;
+                        }
+                        string[] splitLine = reader.ToString().Split(':');
+                        Console.WriteLine(reader);
+
+
+                        Console.WriteLine(splitLine[0] + ":" + splitLine[1]);
+                        line = reader.ReadLine();
+                    }
+                    line = reader.ReadLine();
+                }
+            }
+            catch (IOException e)
+            {
+                Console.WriteLine(e.Message);
+            } catch (Exception e) {
                 Console.WriteLine(e.Message);
             }
         }
