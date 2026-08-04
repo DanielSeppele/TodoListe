@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Reflection;
-
+using System.Text.Json;
+using System.Text.Json;
 namespace ToDoListe
 {
     internal class Program
@@ -15,6 +16,7 @@ namespace ToDoListe
             string dateiPfad = Path.Combine(projektOrdner, "todos.json");
 
             todoListe.aufgabeSpeichern(dateiPfad);
+            todoListe.AufgabeLaden(dateiPfad);
         }
     }
 
@@ -70,7 +72,6 @@ namespace ToDoListe
             }
 
         }
-
         public string AufgabeLöschen(string name)
         {
             int x = 0;
@@ -102,77 +103,52 @@ namespace ToDoListe
 
         }
 
-        public void aufgabeSpeichern(string path)
-        {
-            try
-            {
-                
-                using StreamWriter writer = new StreamWriter(path);
-                int anzahlParameters = typeof(TodoItem).GetFields().Length;
-                string[] varNames = new string[anzahlParameters];
-                int x = 0;
-                foreach (FieldInfo field in typeof(TodoItem).GetFields()) {
-                    varNames[x] = field.Name;    
-                    x++;
-                }
 
-                for(int i = 0; i < todos.Count; i++)
-                {
-                    writer.WriteLine("{");
-                    TodoItem todoItem = todos.ElementAt(i);
-                    for (int y = 0; y < anzahlParameters; y++)
-                    {
-                        var feld = todoItem.GetType().GetField(varNames[y]);
-                        string varName = '"' + varNames[y] + '"';
-                        writer.WriteLine(varName + ":" + feld.GetValue(todoItem));
-                    }
-                    writer.WriteLine("}");
-                }
-            }
-            catch (IOException e)
-            {
-                Console.WriteLine(e.Message);
-            }
+    public void aufgabeSpeichern(string path)
+    {
+        try
+        {
+            string json = JsonSerializer.Serialize(todos, new JsonSerializerOptions { WriteIndented = true });
+            File.WriteAllText(path, json);
+        }
+        catch (IOException e)
+        {
+            Console.WriteLine(e.Message);
+        }
+    }
+
+    public void AufgabeLaden(string path)
+    {
+        if (!path.EndsWith(".json"))
+        {
+            Console.WriteLine("Wrong File Type.");
+            return;
         }
 
-        public void AufgabeLaden(string path)
+        try
         {
-            if (!path.EndsWith(".json"))
-            {
-                Console.WriteLine("Wrong File Type.");
-                return;
-            }
-
-            try
-            {
-                using StreamReader reader = new StreamReader(path);
-                string line = reader.ReadLine();
-                todos.Clear();
-                while (line != null)
-                {
-                    TodoItem item = new TodoItem(null, -1, Prios.NotImportant);
-                    
-                    while (line != "}") {
-                        if (line == "{")
-                        {
-                            continue;
-                        }
-                        string[] splitLine = reader.ToString().Split(':');
-                        Console.WriteLine(reader);
+            string json = File.ReadAllText(path);
+            todos = JsonSerializer.Deserialize<List<TodoItem>>(json);
+            AufgabenAnzeigen();
+        }
+        catch (IOException e)
+        {
+            Console.WriteLine(e.Message);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+    }
 
 
-                        Console.WriteLine(splitLine[0] + ":" + splitLine[1]);
-                        line = reader.ReadLine();
-                    }
-                    line = reader.ReadLine();
-                }
-            }
-            catch (IOException e)
+    private void AufgabenAnzeigen()
+        {
+            for (int i = 0; i < todos.Count; i++)
             {
-                Console.WriteLine(e.Message);
-            } catch (Exception e) {
-                Console.WriteLine(e.Message);
+                Console.WriteLine(todos.ElementAt(i).ToString());
             }
         }
+    
     }
 }
